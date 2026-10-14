@@ -256,6 +256,40 @@ h3.sub{font:800 15px var(--display);margin:18px 0 4px}
 .big-n{font:800 64px/1 var(--display);text-align:center}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
+
+.btn:disabled,.back:disabled{opacity:.5;cursor:not-allowed}
+.dot:disabled{opacity:.45;cursor:not-allowed}
+#stage.locked{opacity:.45;filter:grayscale(.5);pointer-events:none}
+.wait{margin-top:10px;font-weight:700;font-size:15px}
+.wbar{display:block;height:8px;margin-top:6px;border-radius:99px;background:rgba(20,18,61,.12);overflow:hidden}
+.wbar i{display:block;height:100%;width:100%;background:var(--bad);transition:width .3s linear}
+.chip.small{font-size:15px;min-width:0;padding:8px 12px;line-height:1.3}
+.scalebox{max-width:360px;margin:0 auto}.scale{width:100%;height:auto;display:block}
+.pan{display:flex;flex-wrap:wrap;gap:8px 6px;justify-content:center;min-height:52px;padding:6px 4px 14px}
+.wt,.bl{position:relative;width:40px;height:40px;display:grid;place-items:center;font:800 12px var(--display);padding:0;border:3px solid var(--edge);color:#fff}
+.wt{border-radius:8px;background:#14123d}
+.bl{border-radius:50% 50% 50% 50%/58% 58% 42% 42%;background:#2459f2}
+.bl::after{content:"";position:absolute;left:50%;top:100%;width:2px;height:9px;background:var(--ink);margin-left:-1px}
+.pan button.wt,.pan button.bl{cursor:pointer}
+.pan button:disabled{cursor:default;opacity:1}
+.scoreb{background:#14123d;color:#fff;border-radius:18px;padding:12px 16px;text-align:center;max-width:340px;margin:0 auto}
+.scoreb .sn{font:800 15px var(--display);color:var(--yel)}
+.sbig{display:flex;justify-content:center;align-items:center;gap:14px;font:800 52px/1.1 var(--display)}
+.sbig i{font-style:normal;opacity:.6}
+.sl{display:flex;justify-content:space-around;font-size:13px;opacity:.8}
+.diffbig{text-align:center;font:800 28px var(--display);margin:10px 0}
+.tbl{border-collapse:collapse;margin:0 auto;width:min(100%,380px)}
+.tbl th,.tbl td{padding:8px 10px;border-bottom:2px solid var(--soft);text-align:center}
+.tbl th{font:800 11px var(--display);color:var(--muted)}.tbl td:first-child{text-align:left;font-weight:800}
+.clock{display:block;margin:0 auto;width:min(100%,260px);height:auto;cursor:pointer}
+.strips{display:grid;gap:14px;margin:6px 0}
+.strips figure{margin:0}
+.strips figcaption{margin-top:4px;font-weight:700;font-size:15px;color:var(--muted);display:flex;align-items:center;gap:6px;min-height:34px}
+.strip{display:flex;height:46px;border:3px solid var(--ink);border-radius:12px;overflow:hidden;background:#fff}
+.strip button{flex:1;min-width:0;border:0;border-right:2px solid var(--ink);background:#fff;padding:0;cursor:pointer}
+.strip button:last-child{border-right:0}
+.strip button.on{background:var(--c,#ff7a00)}
+.strip.still button{cursor:default}
 </style>
 </head>
 <body>
@@ -266,7 +300,7 @@ h3.sub{font:800 15px var(--display);margin:18px 0 4px}
   <header class="hero">
     <div class="ht">
       <h1>Числовой остров</h1>
-      <p>Минус и дроби — через игры. 10 тем, в каждой по 4 задания. Начни с лаборатории или выбери любую плитку.</p>
+      <p>Минус и дроби — через игры. 15 тем, в каждой по 4 задания. Начни с лаборатории или выбери любую плитку.</p>
       <div class="pill" id="totalStars"></div>
     </div>
     <svg class="isle" viewBox="0 0 320 200" aria-hidden="true"><g stroke="#14123d" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><g stroke="#ffd93d" stroke-width="5"><path d="M258 12v8M258 84v8M214 52h8M294 52h8M227 21l6 6M283 77l6 6M289 21l-6 6M233 77l-6 6"/></g><circle cx="258" cy="52" r="25" fill="#ffd93d"/><path d="M34 74a15 15 0 0 1 29-5a13 13 0 0 1 26 4a11 11 0 0 1-2 21H44a12 12 0 0 1-10-20Z" fill="#fff"/><path d="M0 152q20-14 40 0t40 0 40 0 40 0 40 0 40 0 40 0 40 0V200H0Z" fill="#59a6ff"/><path d="M62 166Q72 124 160 120Q248 124 258 166Q160 182 62 166Z" fill="#ffd93d"/><path d="M146 128Q158 92 140 52" fill="none" stroke="#8a4a24" stroke-width="8"/><path d="M140 52Q116 28 92 44Q120 42 140 52Z" fill="#2fcf7a"/><path d="M140 52Q152 22 180 26Q160 34 140 52Z" fill="#2fcf7a"/><path d="M140 52Q170 44 190 62Q162 56 140 52Z" fill="#2fcf7a"/><path d="M140 52Q124 68 104 88Q122 64 140 52Z" fill="#2fcf7a"/><circle cx="144" cy="58" r="5" fill="#8a4a24"/><path d="M206 144V112"/><rect x="190" y="96" width="34" height="22" rx="5" fill="#fff"/></g><text x="207" y="113" text-anchor="middle" font-family="Unbounded,sans-serif" font-weight="800" font-size="15" fill="#ff3d5a">0</text></svg>
@@ -342,14 +376,31 @@ const persist=()=>{try{localStorage.setItem('chislovoy-ostrov',JSON.stringify(sa
 /* ================= ядро игры ================= */
 const WORLDS=[];
 const views={home:$('#home'),lab:$('#lab'),game:$('#game')};
-const show=v=>{TOK++;for(const k in views)views[k].hidden=k!==v;window.scrollTo({top:0})};
+const show=v=>{TOK++;G.lock=false;stage.classList.remove('locked');stage.removeAttribute('inert');$('#again').disabled=false;for(const k in views)views[k].hidden=k!==v;window.scrollTo({top:0})};
 const fb=$('#fb'),stage=$('#stage'),nextBtn=$('#next');
-let G={w:null,l:0,mist:0,over:false};
+let G={w:null,l:0,mist:0,over:false,lock:false};
+let LOCK_SEC=20; /* пауза после неправильного ответа */
 
 let TOK=0; /* номер уровня: отложенные действия старого уровня не должны срабатывать в новом */
 const later=(fn,ms)=>{const t=TOK;setTimeout(()=>{if(t===TOK)fn()},ms)};
+function setLock(on){
+  G.lock=on;stage.classList.toggle('locked',on);
+  if(on)stage.setAttribute('inert','');else stage.removeAttribute('inert');
+  $('#again').disabled=on;renderDots();
+}
+function startLock(){
+  setLock(true);const end=Date.now()+LOCK_SEC*1000,tok=TOK;
+  const tick=()=>{
+    if(tok!==TOK||!G.lock)return;
+    const ms=end-Date.now(),t=$('#waitTxt'),bar=$('#waitBar');
+    if(ms<=0){setLock(false);if(t)t.textContent='Можно пробовать снова.';if(bar)bar.style.width='0%';return}
+    if(t)t.innerHTML=`Прочитай подсказку и подумай. Снова можно через <b>${Math.ceil(ms/1000)}</b> с`;
+    if(bar)bar.style.width=(ms/(LOCK_SEC*1000)*100)+'%';
+    setTimeout(tick,250);
+  };tick();
+}
 const api={
-  get over(){return G.over},
+  get over(){return G.over||G.lock},
   win(msg){
     if(G.over)return;G.over=true;
     const stars=Math.max(1,3-G.mist);
@@ -360,8 +411,9 @@ const api={
   },
   miss(msg){
     if(G.over)return;G.mist++;
-    fb.className='fb bad';fb.innerHTML=msg;
+    fb.className='fb bad';fb.innerHTML=`<div>${msg}</div><div class="wait"><span id="waitTxt"></span><span class="wbar"><i id="waitBar"></i></span></div>`;
     stage.classList.remove('shake');void stage.offsetWidth;stage.classList.add('shake');
+    startLock();
   },
   fail(msg){G.over=true;fb.className='fb bad';fb.innerHTML=msg},
   info(msg){fb.className='fb info';fb.innerHTML=msg}
@@ -371,7 +423,7 @@ function renderDots(){
   const box=$('#dots');box.innerHTML='';
   G.w.levels.forEach((_,i)=>{
     const st=(save[G.w.id]||[])[i]||0;
-    const d=h('button','dot'+(st?' done':'')+(i===G.l?' cur':''),String(i+1));
+    const d=h('button','dot'+(st?' done':'')+(i===G.l?' cur':''),String(i+1));d.disabled=G.lock;
     d.setAttribute('aria-label','Уровень '+(i+1));
     d.onclick=()=>{G.l=i;startLevel()};box.append(d);
   });
@@ -384,7 +436,7 @@ function openWorld(w){
 }
 function startLevel(){
   const lv=G.w.levels[G.l];
-  TOK++;G.mist=0;G.over=false;
+  TOK++;G.mist=0;G.over=false;G.lock=false;stage.classList.remove('locked');stage.removeAttribute('inert');$('#again').disabled=false;
   $('#introCard').hidden=true;$('#play').hidden=false;
   $('#q').innerHTML=lv.q;stage.innerHTML='';fb.className='fb';fb.innerHTML='';
   nextBtn.hidden=true;$('#again').hidden=false;renderDots();
@@ -446,7 +498,7 @@ const liftLevel=(q,start,ans,hint,ok)=>({q,run(st){
   const b=building(st,{min:-3,max:5,start,onPick:f=>{
     if(api.over)return;b.move(f);
     if(f===ans)api.win(ok);
-    else{api.miss(`Ты выбрал этаж ${num(f)}. ${hint}`);later(()=>{if(!api.over)b.move(start)},900)}
+    else{api.miss(`Ты выбрал этаж ${num(f)}. ${hint}`);later(()=>{if(!G.over)b.move(start)},900)}
   }});
 }});
 world({id:'lift',title:'Лифт',sub:'Этаж ниже нуля',group:'neg',
@@ -891,6 +943,220 @@ world({id:'music',title:'Музыкальные доли',sub:'Ритм из д�
     musicLevel('Короткий такт на <b>3 хлопка</b>. Используй <b>минимум две восьмые</b> ноты.',3,['h','q','e'],ns=>ns.filter(n=>n.k==='e').length>=2?null:'Нужно хотя бы две восьмые ноты (по полхлопка).','Две восьмые вместе дают один хлопок.')
   ]});
 
+/* ================= МИР 11. Весы и шарики ================= */
+const net=a=>a.reduce((s,k)=>s+(k==='w'?1:-1),0);
+function scaleSvg(l,r){
+  const a=clamp((r-l)*4,-22,22),rad=a*Math.PI/180,L=118,px=180,py=52;
+  const lx=px-L*Math.cos(rad),ly=py-L*Math.sin(rad),rx=px+L*Math.cos(rad),ry=py+L*Math.sin(rad);
+  const col=v=>v<0?'var(--neg)':v>0?'var(--pos)':'var(--ink)';
+  const pan=(x,y,v)=>`<path d="M${x} ${y}L${x-46} ${y+74}M${x} ${y}L${x+46} ${y+74}" style="fill:none;stroke:var(--ink);stroke-width:3"/><path d="M${x-54} ${y+74}H${x+54}Q${x} ${y+112} ${x-54} ${y+74}Z" style="fill:var(--yel);stroke:var(--ink);stroke-width:3;stroke-linejoin:round"/><text x="${x}" y="${y+62}" text-anchor="middle" style="font:800 24px Unbounded,sans-serif;fill:${col(v)}">${sg(v)}</text>`;
+  return `<svg viewBox="0 0 360 240" class="scale" role="img" aria-label="Весы: слева ${sg(l)}, справа ${sg(r)}"><path d="M${px} ${py}V212M136 222H224" style="fill:none;stroke:var(--ink);stroke-width:6;stroke-linecap:round"/>${pan(lx,ly,l)}${pan(rx,ry,r)}<line x1="${lx}" y1="${ly}" x2="${rx}" y2="${ry}" style="stroke:var(--ink);stroke-width:7;stroke-linecap:round"/><circle cx="${px}" cy="${py}" r="9" style="fill:var(--yel);stroke:var(--ink);stroke-width:3"/></svg>`;
+}
+function tray(items,onClick){
+  const box=h('div','pan');
+  items.forEach((k,i)=>{
+    const b=h('button',k==='w'?'wt':'bl',k==='w'?'+1':'−1');
+    b.setAttribute('aria-label',k==='w'?'гирька':'шарик');
+    if(onClick)b.onclick=()=>onClick(i);else b.disabled=true;box.append(b);
+  });
+  if(!items.length)box.append(h('span','note','пусто'));
+  return box;
+}
+world({id:'scales',title:'Весы и шарики',sub:'Гирька плюс, шарик минус',group:'neg',
+  intro:'Гирька тянет чашу вниз — это <b>+1</b>. Воздушный шарик, привязанный к чаше, тянет её вверх — это <b>−1</b>. Чем больше шариков, тем легче чаша. Если шариков больше, чем гирек, чаша «весит» меньше нуля.',
+  levels:[
+    {q:'Гирька — это <b>+1</b>, шарик — это <b>−1</b>. На левой чаше 3 гирьки и 1 шарик. Сколько «весит» левая чаша?',run(st){
+      const L=['w','w','w','b'],box=h('div','scalebox');box.innerHTML=scaleSvg(net(L),0);
+      st.append(box,tray(L));
+      choices(st,numOpts(2,[4,-2,3]),2,'3 − 1 = 2: шарик убрал у одной гирьки вес, осталось +2.',o=>`${sg(o.value)}? Шарик не прибавляет вес, а отнимает его: гирьки считай как +1, шарики как −1.`);
+    }},
+    {q:'На левой чаше 2 гирьки и 5 шариков. Чаша поднялась вверх. Сколько она «весит»?',run(st){
+      const L=['w','w','b','b','b','b','b'],box=h('div','scalebox');box.innerHTML=scaleSvg(net(L),0);
+      st.append(box,tray(L));
+      choices(st,numOpts(-3,[3,7,-7]),-3,'2 − 5 = −3: шариков больше, чем гирек, поэтому чаша ушла вверх, а её вес стал отрицательным.',o=>`${sg(o.value)}? Гирек всего 2, а шариков 5, и тянут они вверх. Посчитай 2 − 5.`);
+    }},
+    {q:'На левой чаше 1 гирька и 3 шарика. Добавляй гирьки и шарики на <b>правую</b> чашу, пока весы не встанут ровно. Нажми на предмет, чтобы убрать его.',run(st){
+      const L=['w','b','b','b'],R=[],ln=net(L);
+      const box=h('div','scalebox'),right=h('div'),log=h('div','note');
+      const draw=()=>{
+        box.innerHTML=scaleSvg(ln,net(R));right.innerHTML='';
+        right.append(tray(R,i=>{if(api.over)return;R.splice(i,1);draw()}));
+        log.textContent=`Слева ${sg(ln)}, справа ${sg(net(R))}`;
+        if(net(R)===ln)api.win(`${sg(ln)} = ${sg(net(R))}: весы в равновесии. Справа столько же «веса», сколько слева.`);
+      };
+      const add=h('button','btn','+ гирька'),bal=h('button','btn ghost','+ шарик');
+      add.onclick=()=>{if(api.over||R.length>=10)return;R.push('w');draw()};
+      bal.onclick=()=>{if(api.over||R.length>=10)return;R.push('b');draw()};
+      const ctl=h('div','choices');ctl.append(add,bal);
+      st.append(box,h('div','note','Левая чаша'),tray(L),h('div','note','Правая чаша'),right,ctl,log);draw();
+    }},
+    {q:'На левой чаше 2 гирьки и 3 шарика, она весит <b>−1</b>. Сними шарики так, чтобы чаша стала весить <b>+1</b>. Нажимай на предметы, чтобы убрать их.',run(st){
+      const L=['w','w','b','b','b'],box=h('div','scalebox'),log=h('div','note'),holder=h('div');
+      const draw=()=>{box.innerHTML=scaleSvg(net(L),0);holder.innerHTML='';holder.append(tray(L,i=>{
+        if(api.over)return;const was=net(L),k=L[i];L.splice(i,1);
+        log.textContent=`${num(was)} − (${k==='w'?'+1':'−1'}) = ${num(net(L))}`;draw();
+        if(net(L)===1)api.win(`Убрать шарик (−1) — всё равно что добавить +1. Снимаем два шарика: −1 + 2 = +1.`);
+      }))};
+      st.append(box,holder,log);draw();
+    }}
+  ]});
+
+/* ================= МИР 12. Старт ракеты ================= */
+function tline(st,pick){
+  const min=-10,max=10,W=700,P=34,U=(W-2*P)/(max-min),X=v=>P+(v-min)*U;
+  let s=`<svg viewBox="0 0 ${W} 190" class="nl" role="img" aria-label="Шкала времени от −10 до 10 секунд">`;
+  s+=`<rect x="${P-12}" y="16" width="${X(0)-P+12}" height="100" rx="12" style="fill:var(--negbg)"/><rect x="${X(0)}" y="16" width="${W-P-X(0)+12}" height="100" rx="12" style="fill:var(--posbg)"/>`;
+  s+=`<text x="${X(-5)}" y="42" text-anchor="middle" font-size="20" style="fill:var(--neg)">до старта</text><text x="${X(5)}" y="42" text-anchor="middle" font-size="20" style="fill:var(--pos)">после старта</text>`;
+  s+=`<line x1="14" y1="92" x2="${W-14}" y2="92" style="stroke:var(--ink);stroke-width:4"/>`;
+  for(let v=min;v<=max;v++){
+    const x=X(v),len=v%5===0?26:14;
+    s+=`<line x1="${x}" y1="92" x2="${x}" y2="${92+len}" style="stroke:var(--ink);stroke-width:${v%5===0?4:3}"/>`;
+    if(v%5===0)s+=`<text x="${x}" y="150" text-anchor="middle" font-size="26" font-weight="800" style="fill:var(--ink)">${num(v)}</text>`;
+  }
+  s+=`<circle cx="${X(0)}" cy="92" r="8" style="fill:var(--hot)"/><g id="tmk"></g><rect x="0" y="0" width="${W}" height="190" fill="transparent"/></svg>`;
+  const box=h('div','',s);st.append(box);
+  const svg=$('svg',box),mk=$('#tmk',box);
+  const set=v=>{const x=X(v);mk.style.transition='';mk.innerHTML=`<g transform="translate(${x} 62)"><path d="M0-34Q12-18 9 6H-9Q-12-18 0-34Z" style="fill:#fff;stroke:#14123d;stroke-width:3;stroke-linejoin:round"/><circle cx="0" cy="-14" r="4" style="fill:#5bc8ff;stroke:#14123d;stroke-width:2"/><path d="M-9 -2L-17 12L-9 8Z M9 -2L17 12L9 8Z" style="fill:#ff3d5a;stroke:#14123d;stroke-width:2;stroke-linejoin:round"/><path d="M-5 8Q0 26 5 8Z" style="fill:#ffd93d;stroke:#14123d;stroke-width:2"/></g><circle cx="${x}" cy="92" r="6" style="fill:var(--sun);stroke:var(--ink);stroke-width:3"/><text x="${x}" y="182" text-anchor="middle" font-size="26" font-weight="800" style="fill:${v<0?'var(--neg)':v>0?'var(--pos)':'var(--ink)'}">T = ${sg(v)}</text>`};
+  if(pick)svg.addEventListener('click',e=>{
+    if(api.over)return;const r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W;
+    const v=clamp(Math.round((x-P)/U+min),min,max);set(v);pick(v);
+  });else svg.style.cursor='default';
+  return {set};
+}
+function sortGame(st,items,okMsg,noMsg){
+  const sorted=[...items].sort((a,b)=>a.val-b.val);let k=0;
+  const row=h('div','sortrow'),pool=h('div','choices');
+  shuffle(items).forEach(it=>{
+    const b=h('button','chip small',it.html);
+    b.onclick=()=>{
+      if(api.over||b.disabled)return;
+      if(it===sorted[k]){b.disabled=true;b.classList.add('ok');row.append(h('span','sorted',it.html));k++;if(k===sorted.length)api.win(okMsg)}
+      else api.miss(typeof noMsg==='function'?noMsg(it):noMsg);
+    };pool.append(b);
+  });
+  st.append(row,pool);
+}
+world({id:'rocket',title:'Старт ракеты',sub:'Время до и после нуля',group:'neg',
+  intro:'Перед стартом ракеты идёт обратный отсчёт: <b>−10, −9 … −1</b>. Момент старта — это <b>0</b>. После старта время идёт плюсами: <b>+1, +2, +3</b>. Минус значит «ещё до старта».',
+  levels:[
+    {q:'Ракета стартует в момент <b>0</b>. Сейчас <b>T = −5</b>. Сколько секунд осталось до старта?',run(st){
+      tline(st,null).set(-5);
+      choices(st,numOpts(5,[-5,10,0],num),5,'До старта 5 секунд: от −5 до 0 пять шагов.',o=>`${num(o.value)}? Отсчёт идёт до нуля: от −5 до 0 — сколько шагов?`);
+    }},
+    {q:'Сейчас <b>T = −3</b>. Проходит ещё <b>7</b> секунд. Каким станет T?',run(st){
+      const t=tline(st,null);t.set(-3);
+      choices(st,numOpts(4,[-10,-4,10]),4,'−3 + 7 = +4: три секунды до старта и ещё четыре секунды полёта.',o=>`${sg(o.value)}? Сначала дойди до нуля (старт) — это 3 секунды. Остальные секунды уже полёт.`,()=>t.set(4));
+    }},
+    {q:'Проверка двигателей была за <b>6 секунд до старта</b>. Нажми на шкале нужный момент времени.',run(st){
+      tline(st,v=>{v===-6?api.win('Верно: T = −6. «За 6 секунд до старта» — это минус 6.'):api.miss(`Ты выбрал T = ${sg(v)}. ${v>0?'Это уже после старта, а проверка была до него — слева от нуля.':'До старта — слева от нуля. Отсчитай 6 делений влево.'}`)});
+    }},
+    {q:'Расставь события по порядку, от <b>самого раннего</b> к самому позднему. Нажимай карточки по очереди.',run(st){
+      sortGame(st,[
+        {html:'Проверка связи<br>T = −12',val:-12},{html:'Заправка<br>T = −8',val:-8},{html:'Закрытие люка<br>T = −2',val:-2},
+        {html:'Старт<br>T = 0',val:0},{html:'Отделение ступени<br>T = +4',val:4}
+      ],'Верный порядок: −12, −8, −2, 0, +4. Чем левее на шкале, тем раньше.',it=>`«${it.html.replace('<br>',' ')}» — не самое раннее из оставшихся. Раньше то, что левее на шкале: −12 раньше, чем −2.`);
+    }}
+  ]});
+
+/* ================= МИР 13. Разница мячей ================= */
+const scoreHtml=(name,f,a)=>`<div class="scoreb"><div class="sn">${name}</div><div class="sbig"><span>${f}</span><i>:</i><span>${a}</span></div><div class="sl"><span>забили</span><span>пропустили</span></div></div>`;
+world({id:'goals',title:'Разница мячей',sub:'Забил минус пропустил',group:'neg',
+  intro:'В турнирной таблице есть колонка «разница мячей»: сколько команда <b>забила</b> минус сколько <b>пропустила</b>. Если пропустила больше, чем забила, разница получается отрицательной.',
+  levels:[
+    {q:'Команда «Орлы» забила 3 гола и пропустила 5. Какая у неё разница мячей?',run(st){
+      st.append(h('div','',scoreHtml('Орлы',3,5)));
+      choices(st,numOpts(-2,[2,8,-8]),-2,'3 − 5 = −2: пропустили на два гола больше, чем забили.',o=>`${sg(o.value)}? Разница — это забитые минус пропущенные: 3 − 5.`);
+    }},
+    {q:'У какой команды <b>лучшая</b> разница мячей?',run(st){
+      const T=[['Ястребы',9,8],['Орлы',6,2],['Лисы',5,9],['Волки',4,4]];
+      st.append(h('div','',`<table class="tbl"><tr><th>Команда</th><th>Забили</th><th>Пропустили</th></tr>${T.map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td></tr>`).join('')}</table>`));
+      choices(st,shuffle(T).map(t=>({label:t[0],value:t[0]})),'Орлы','Орлы: 6 − 2 = +4. Ястребы забили больше всех, но и пропустили много: 9 − 8 = +1.',o=>{const t=T.find(x=>x[0]===o.value);return `У команды «${o.value}» разница ${sg(t[1]-t[2])}. Сравни разницы всех команд, а не только забитые мячи.`});
+    }},
+    {q:'Расставь команды по разнице мячей от <b>худшей</b> к лучшей. Каждая карточка — «забили : пропустили».',run(st){
+      sortGame(st,[[3,7],[5,5],[2,3],[6,4],[1,6]].map(t=>({html:`${t[0]} : ${t[1]}`,val:t[0]-t[1]})),
+        'Верно: −5, −4, −1, 0, +2. Чем меньше число, тем хуже разница.',it=>`Разница у ${it.html} — это ${sg(it.val)}. Худшая разница — самая маленькая, самая «минусовая».`);
+    }},
+    {q:'«Лисы» забили 4 и пропустили 6 (разница −2). Забивай и пропускай голы, чтобы разница стала ровно <b>+1</b>.',run(st){
+      let f=4,a=6;const board=h('div'),diff=h('div','diffbig'),log=h('div','note');
+      const draw=()=>{board.innerHTML=scoreHtml('Лисы',f,a);const d=f-a;diff.textContent='Разница: '+sg(d);diff.style.color=d<0?'var(--neg)':d>0?'var(--pos)':'var(--ink)';if(d===1)api.win(`${f} − ${a} = +1. Из −2 в +1 — это три забитых гола без пропущенных.`)};
+      const g=h('button','btn','Забили гол'),m=h('button','btn ghost','Пропустили гол');
+      g.onclick=()=>{if(api.over)return;const was=f-a;f++;log.textContent=`${num(was)} + 1 = ${num(f-a)}`;draw()};
+      m.onclick=()=>{if(api.over)return;const was=f-a;a++;log.textContent=`${num(was)} − 1 = ${num(f-a)}`;draw()};
+      const ctl=h('div','choices');ctl.append(g,m);st.append(board,diff,ctl,log);draw();
+    }}
+  ]});
+
+/* ================= МИР 14. Часы ================= */
+function clockSvg(m,sector=true){
+  const C=110,R=92,rad=a=>a*Math.PI/180,pt=(d,r)=>[C+r*Math.sin(rad(d)),C-r*Math.cos(rad(d))];
+  let s=`<svg viewBox="0 0 220 220" class="clock" role="img" aria-label="Часы, минутная стрелка на ${m} минутах"><circle cx="110" cy="110" r="102" style="fill:#ffd93d;stroke:#14123d;stroke-width:4"/><circle cx="110" cy="110" r="92" style="fill:#fff"/>`;
+  if(m>0&&sector){const [x,y]=pt(m*6,R);s+=`<path d="M110 110V${110-R}A${R} ${R} 0 ${m>30?1:0} 1 ${x} ${y}Z" style="fill:#ff7a00;opacity:.55"/>`}
+  for(let i=0;i<60;i++){const big=i%5===0,[x1,y1]=pt(i*6,R-(big?12:6)),[x2,y2]=pt(i*6,R-1);s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:#14123d;stroke-width:${big?3:1.5}"/>`}
+  for(let n=1;n<=12;n++){const [x,y]=pt(n*30,70);s+=`<text x="${x}" y="${y+6}" text-anchor="middle" style="font:800 17px Unbounded,sans-serif;fill:#14123d">${n}</text>`}
+  const [hx,hy]=pt(m*6,80);
+  return s+`<line x1="110" y1="110" x2="${hx}" y2="${hy}" style="stroke:#14123d;stroke-width:6;stroke-linecap:round"/><circle cx="110" cy="110" r="7" style="fill:#14123d"/></svg>`;
+}
+const clockLevel=(q,target,ok)=>({q,run(st){
+  const box=h('div','',clockSvg(0)),info=h('div','note','Нажми на циферблат там, куда должна показывать минутная стрелка.');
+  box.addEventListener('click',e=>{
+    if(api.over)return;const svg=$('svg',box),r=svg.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width*220-110,y=(e.clientY-r.top)/r.height*220-110;
+    let ang=Math.atan2(x,-y)*180/Math.PI;if(ang<0)ang+=360;
+    const m=(Math.round(ang/30)*5)%60;box.innerHTML=clockSvg(m);
+    const g=gcd(m,60),fx=m?fr(m/g,60/g):'0';
+    info.innerHTML=`${m} минут — это ${m}/60 = ${fx} часа`;
+    if(m===target)api.win(ok);
+    else api.miss(`Стрелка показывает ${m} минут, то есть ${fx} часа. Весь час — это 60 минут.`);
+  });
+  st.append(box,info);
+}});
+world({id:'clock',title:'Часы',sub:'Доли часа',group:'frac',
+  intro:'Час — это 60 минут, целый круг на часах. Четверть круга — 15 минут, половина круга — 30. Минутная стрелка показывает, какую <b>долю часа</b> уже прошла: 30 минут — это 30/60, то есть 1/2.',
+  levels:[
+    clockLevel(`Покажи на часах <b>половину часа</b> — ${fr(1,2)}.`,30,'30 минут — это 30/60 = 1/2 часа. Стрелка смотрит вниз.'),
+    clockLevel(`Покажи <b>четверть часа</b> — ${fr(1,4)}.`,15,'15 минут — это 15/60 = 1/4 часа. Закрашена четверть круга.'),
+    clockLevel(`Покажи <b>три четверти часа</b> — ${fr(3,4)}.`,45,'45 минут — это 45/60 = 3/4 часа: три четверти круга.'),
+    {q:'Минутная стрелка показывает <b>20 минут</b>. Какая это доля часа?',run(st){
+      st.append(h('div','',clockSvg(20)));
+      choices(st,[{label:fr(1,3),value:'a'},{label:fr(1,4),value:'b'},{label:fr(1,5),value:'c'},{label:fr(1,2),value:'d'}],'a','20 из 60: сократим на 20, получим 1 из 3. Закрашена третья часть круга.',()=>'Целый час — 60 минут. Сколько раз по 20 минут помещается в часе?');
+    }}
+  ]});
+
+/* ================= МИР 15. Полоски дробей ================= */
+function strip(n,{sel=new Set(),onToggle,color='#ff7a00'}={}){
+  const el=h('div','strip'+(onToggle?'':' still'));el.style.setProperty('--c',color);const segs=[];
+  const draw=()=>segs.forEach((b,i)=>b.classList.toggle('on',sel.has(i)));
+  for(let i=0;i<n;i++){const b=h('button','');b.setAttribute('aria-label','часть '+(i+1));b.onclick=()=>{if(!onToggle)return;sel.has(i)?sel.delete(i):sel.add(i);draw();onToggle(sel)};segs.push(b);el.append(b)}
+  draw();return {el,sel};
+}
+function stripFig(n,{cap='',...o}={}){
+  const s=strip(n,o),f=h('figure'),c=h('figcaption',cap);f.append(s.el,c);s.fig=f;s.cap=c;return s;
+}
+const addStripLevel=(q,parts,n,need,ok,hint)=>({q,run(st){
+  const box=h('div','strips');
+  parts.forEach(([pn,pk,color])=>box.append(stripFig(pn,{sel:new Set(Array.from({length:pk},(_,i)=>i)),cap:fr(pk,pn),color}).fig));
+  const res=stripFig(n,{color:'#12a85f',cap:`сумма: ${fr(0,n)}`,onToggle:set=>{res.cap.innerHTML=`сумма: ${fr(set.size,n)}`}});
+  box.append(res.fig);st.append(box);
+  checkBtn(st,()=>res.sel.size===need?api.win(ok):api.miss(`Ты закрасил ${fr(res.sel.size,n)}. ${hint}`));
+}});
+world({id:'strips',title:'Полоски дробей',sub:'Сравниваем и складываем',group:'frac',
+  intro:'Все полоски одной длины, но порезаны на разное число частей. Так видно, какие дроби <b>равны</b>, какая <b>больше</b> и как дроби <b>складываются</b>.',
+  levels:[
+    {q:`Сверху закрашена ${fr(1,3)} полоски. Закрась на нижней полоске (6 частей) <b>столько же</b>.`,run(st){
+      const a=stripFig(3,{sel:new Set([0]),cap:fr(1,3),color:'#ff7a00'});
+      const b=stripFig(6,{color:'#2459f2',cap:fr(0,6),onToggle:set=>{b.cap.innerHTML=fr(set.size,6)}});
+      const box=h('div','strips');box.append(a.fig,b.fig);st.append(box);
+      checkBtn(st,()=>b.sel.size===2?api.win('1/3 = 2/6: каждая треть — это две шестых.'):api.miss(`Ты закрасил ${fr(b.sel.size,6)}. Одна треть содержит две шестых: 6 : 3 = 2.`));
+    }},
+    {q:`Какая дробь <b>больше</b>: ${fr(3,8)} или ${fr(1,2)}? Посмотри на полоски.`,run(st){
+      const a=stripFig(8,{sel:new Set([0,1,2]),cap:fr(3,8),color:'#ff7a00'}),b=stripFig(2,{sel:new Set([0]),cap:fr(1,2),color:'#2459f2'});
+      const box=h('div','strips');box.append(a.fig,b.fig);st.append(box);
+      choices(st,[{label:fr(3,8),value:'a'},{label:fr(1,2),value:'b'},{label:'Одинаково',value:'e'}],'b','1/2 = 4/8, а 3/8 меньше. Закрашенная часть оранжевой полоски короче.',o=>o.value==='a'?'Числа 3 и 8 больше, чем 1 и 2, но это не значит, что дробь больше. Сравни закрашенные части полосок.':'Длины закрашенного на двух полосках разные — посмотри внимательно.');
+    }},
+    addStripLevel(`${fr(1,4)} + ${fr(2,4)} = ? Закрась на нижней полоске сумму.`,[[4,1,'#ff7a00'],[4,2,'#2459f2']],4,3,'1/4 + 2/4 = 3/4: у них одинаковые части, поэтому складываем числители.','Сложи закрашенные части: одна четвёртая и ещё две четвёртых.'),
+    addStripLevel(`${fr(1,2)} + ${fr(1,4)} = ? Нижняя полоска разрезана на 8 частей. Закрась сумму.`,[[2,1,'#ff7a00'],[4,1,'#2459f2']],8,6,'1/2 = 4/8, 1/4 = 2/8. Вместе 6/8, а это то же самое, что 3/4.','Переведи в восьмые: 1/2 — это 4 части из 8, а 1/4 — 2 части из 8.')
+  ]});
+
 /* ================= ЛАБОРАТОРИЯ ================= */
 function initLab(){
   const rng=$('#labRange'),LR=22,N=13;
@@ -945,6 +1211,14 @@ const ICONS={
  lab:icon(`<path d="M25 6H39V24L54 52a6 6 0 0 1-5 9H15a6 6 0 0 1-5-9L25 24Z" fill="#fff"/><path d="M16 42H48L54 52a6 6 0 0 1-5 9H15a6 6 0 0 1-5-9Z" fill="#2459f2" stroke="none"/><path d="M25 6H39V24L54 52a6 6 0 0 1-5 9H15a6 6 0 0 1-5-9L25 24Z" fill="none"/><path d="M19 52h9M36 52h9M40.5 47.5v9" stroke="#fff" stroke-width="3.5"/><circle cx="43" cy="31" r="2.5" fill="#ffd93d"/>`)
 };
 const COLORS={lift:'#c5ee4e',debts:'#ff82b6',thermo:'#55e3b8',line:'#ffa133',sea:'#70d4ff',steps:'#b99dff',pizza:'#ff6b4f',choc:'#ffd93d',cup:'#8fa8ff',music:'#e977ff',lab:'#ffffff'};
+Object.assign(ICONS,{
+ scales:icon(`<path d="M32 22V52M20 54H44" stroke-width="4"/><path d="M12 26L52 18" stroke-width="4"/><path d="M12 26L3 42H21Z" fill="#fff"/><path d="M52 18L43 34H61Z" fill="#fff"/><rect x="8" y="30" width="8" height="8" rx="2" fill="#14123d"/><circle cx="52" cy="9" r="5" fill="#2459f2"/><path d="M52 14V18" stroke-width="2"/><circle cx="32" cy="22" r="4.5" fill="#ffd93d"/>`),
+ rocket:icon(`<path d="M24 38L13 52L24 46Z M40 38L51 52L40 46Z" fill="#ff3d5a"/><path d="M32 4C43 14 45 29 41 46H23C19 29 21 14 32 4Z" fill="#fff"/><circle cx="32" cy="24" r="5.5" fill="#5bc8ff"/><path d="M27 48Q32 63 37 48Z" fill="#ffd93d"/>`),
+ goals:icon(`<circle cx="32" cy="32" r="24" fill="#fff"/><path d="M32 21L41 28L38 39H26L23 28Z" fill="#14123d"/><path d="M32 21V9M41 28L53 24M38 39L46 50M26 39L18 50M23 28L11 24" fill="none"/>`),
+ clock:icon(`<circle cx="32" cy="32" r="25" fill="#fff"/><path d="M32 32V7A25 25 0 0 1 57 32Z" fill="#ff7a00"/><circle cx="32" cy="32" r="25" fill="none"/><path d="M32 32V14M32 32L44 38" stroke-width="3.5" fill="none"/><circle cx="32" cy="32" r="2.5" fill="#14123d"/>`),
+ strips:icon(`<rect x="8" y="8" width="48" height="14" rx="3" fill="#ffd93d"/><rect x="8" y="25" width="24" height="14" fill="#ff7a00"/><rect x="32" y="25" width="24" height="14" fill="#fff"/><rect x="8" y="42" width="12" height="14" fill="#2459f2"/><rect x="20" y="42" width="12" height="14" fill="#fff"/><rect x="32" y="42" width="12" height="14" fill="#fff"/><rect x="44" y="42" width="12" height="14" fill="#fff"/>`)
+});
+Object.assign(COLORS,{scales:'#ffb98a',rocket:'#ff5c8a',goals:'#3ddc84',clock:'#ffe79a',strips:'#ff9fe0'});
 const STAR='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
 const starsHtml=n=>[1,2,3].map(i=>`<i class="st${i<=n?' on':''}">${STAR}</i>`).join('');
 
